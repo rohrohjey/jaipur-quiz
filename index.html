@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jaipur & the World — City Palace Museum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #e8ddd0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px 48px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .app {
+      background: #F2E8D9;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(60,20,20,0.13);
+    }
+
+    /* Jali watermark */
+    .jali-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header */
+    .header {
+      background: #6B1E2E;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+
+    .museum-name {
+      font-family: 'Cormorant Garamond', serif;
+      color: #F2E8D9;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      font-weight: 400;
+      margin-bottom: 3px;
+    }
+
+    .exhibit-name {
+      font-family: 'Cormorant Garamond', serif;
+      color: #F2E8D9;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .q-counter {
+      font-size: 11px;
+      color: #C9A84C;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* Progress */
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      background: rgba(107,30,46,0.15);
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-fill {
+      height: 3px;
+      background: #C9A84C;
+      transition: width 0.45s ease;
+    }
+
+    /* Question card */
+    .question-card {
+      background: #fff9f3;
+      border-radius: 14px;
+      border: 0.5px solid rgba(107,30,46,0.14);
+      margin: 22px 18px 0;
+      padding: 20px 20px 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #C9A84C;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 21px;
+      font-weight: 600;
+      color: #3A1018;
+      line-height: 1.38;
+    }
+
+    /* Options */
+    .options {
+      margin: 14px 18px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .option-btn {
+      background: #fff9f3;
+      border: 1px solid rgba(107,30,46,0.18);
+      border-radius: 10px;
+      padding: 13px 14px;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #3A1018;
+      font-weight: 400;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.15s, background 0.15s;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: #6B1E2E;
+      background: #fdf0e6;
+    }
+
+    .option-btn:disabled { cursor: default; }
+
+    .result-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.65s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .option-inner {
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .letter {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(107,30,46,0.09);
+      color: #6B1E2E;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      line-height: 22px;
+      margin-right: 10px;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .opt-label { flex: 1; }
+
+    .correct-mark {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #2C5545;
+      margin-left: 8px;
+      opacity: 0;
+      transition: opacity 0.3s 0.5s;
+      white-space: nowrap;
+    }
+
+    .pct {
+      font-size: 13px;
+      font-weight: 500;
+      color: #3A1018;
+      margin-left: 8px;
+      min-width: 34px;
+      text-align: right;
+      opacity: 0;
+      transition: opacity 0.3s 0.45s;
+    }
+
+    /* State classes applied after answer */
+    .is-correct { border-color: #2C5545 !important; }
+    .is-correct .result-bar { background: rgba(44,85,69,0.17); }
+    .is-correct .letter { background: #2C5545; color: #fff; }
+
+    .is-wrong { border-color: #6B1E2E !important; }
+    .is-wrong .result-bar { background: rgba(107,30,46,0.12); }
+
+    .is-other .result-bar { background: rgba(107,30,46,0.07); }
+
+    .revealed .pct { opacity: 1; }
+    .revealed .correct-mark { opacity: 1; }
+
+    /* Feedback */
+    .feedback-wrap {
+      margin: 14px 18px 0;
+      position: relative;
+      z-index: 1;
+      min-height: 0;
+    }
+
+    .feedback-box {
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.4s 0.3s, transform 0.4s 0.3s;
+      display: none;
+    }
+
+    .feedback-box.show { opacity: 1; transform: translateY(0); display: block; }
+    .feedback-box.right { background: #2C5545; color: #F2E8D9; }
+    .feedback-box.wrong { background: #6B1E2E; color: #F2E8D9; }
+
+    /* Next button */
+    .next-btn {
+      display: block;
+      margin: 14px 18px 24px;
+      width: calc(100% - 36px);
+      background: #6B1E2E;
+      color: #F2E8D9;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.3s 0.6s, background 0.15s;
+    }
+
+    .next-btn.show { opacity: 1; }
+    .next-btn:hover { background: #551827; }
+
+    /* Score screen */
+    #score-screen {
+      display: none;
+      padding: 44px 24px 40px;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .score-emblem {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: #6B1E2E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .score-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 38px;
+      font-weight: 600;
+      color: #F2E8D9;
+    }
+
+    .score-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: #3A1018;
+      margin-bottom: 8px;
+    }
+
+    .score-sub {
+      font-size: 13px;
+      color: #6B4A3E;
+      line-height: 1.6;
+      margin-bottom: 28px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .restart-btn {
+      background: #6B1E2E;
+      color: #F2E8D9;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 36px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    .restart-btn:hover { background: #551827; }
+
+    @media (max-width: 400px) {
+      body { padding: 0; }
+      .app { border-radius: 0; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Jali watermark -->
+  <svg class="jali-bg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="jali" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+        <circle cx="20" cy="20" r="3" fill="none" stroke="#6B1E2E" stroke-width="1"/>
+        <circle cx="20" cy="20" r="8" fill="none" stroke="#6B1E2E" stroke-width="0.7"/>
+        <line x1="0" y1="20" x2="12" y2="20" stroke="#6B1E2E" stroke-width="0.5"/>
+        <line x1="28" y1="20" x2="40" y2="20" stroke="#6B1E2E" stroke-width="0.5"/>
+        <line x1="20" y1="0" x2="20" y2="12" stroke="#6B1E2E" stroke-width="0.5"/>
+        <line x1="20" y1="28" x2="20" y2="40" stroke="#6B1E2E" stroke-width="0.5"/>
+        <line x1="0" y1="0" x2="11.7" y2="11.7" stroke="#6B1E2E" stroke-width="0.4"/>
+        <line x1="28.3" y1="28.3" x2="40" y2="40" stroke="#6B1E2E" stroke-width="0.4"/>
+        <line x1="40" y1="0" x2="28.3" y2="11.7" stroke="#6B1E2E" stroke-width="0.4"/>
+        <line x1="11.7" y1="28.3" x2="0" y2="40" stroke="#6B1E2E" stroke-width="0.4"/>
+      </pattern>
+    </defs>
+    <rect width="400" height="600" fill="url(#jali)"/>
+  </svg>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="museum-name">City Palace Museum · Jaipur</div>
+      <div class="exhibit-name">Jaipur &amp; the World</div>
+    </div>
+    <div class="q-counter" id="q-counter">Question 1 of 7</div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:14%"></div>
+  </div>
+
+  <!-- Quiz screen -->
+  <div id="quiz-screen">
+    <div class="question-card">
+      <div class="eyebrow">Did You Know?</div>
+      <div class="question-text" id="question-text"></div>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback-wrap">
+      <div class="feedback-box" id="feedback"></div>
+    </div>
+
+    <button class="next-btn" id="next-btn">Next question →</button>
+  </div>
+
+  <!-- Score screen -->
+  <div id="score-screen">
+    <div class="score-emblem">
+      <span class="score-num" id="final-score"></span>
+    </div>
+    <div class="score-title" id="score-title"></div>
+    <div class="score-sub" id="score-sub"></div>
+    <button class="restart-btn" onclick="startQuiz()">Try again</button>
+  </div>
+
+</div>
+
+<script>
+  const questions = [
+    {
+      q: "In which year did Maharaja Sawai Jai Singh II found the city of Jaipur — making it one of India's first planned cities?",
+      opts: ["1727", "1699", "1743", "1782"],
+      correct: 0,
+      votes: [52, 18, 20, 10],
+      fact: "Founded in 1727, Jaipur was laid out according to the principles of Vastu Shastra in a grid plan, making it one of the earliest planned cities in the subcontinent."
+    },
+    {
+      q: "Why did Jaipur's court collect European prints of cities and palaces in the early 1700s?",
+      opts: [
+        "To study foreign styles and situate itself within global knowledge",
+        "To prepare for British colonial rule in India",
+        "To decorate temples with European religious imagery",
+        "To train soldiers in European military tactics"
+      ],
+      correct: 0,
+      votes: [54, 16, 18, 12],
+      fact: "Jaipur's court was a hub of cosmopolitan curiosity. Collecting European prints was an act of intellectual engagement — the rulers sought to understand the wider world and position Jaipur as a centre of global knowledge, not merely regional power."
+    },
+    {
+      q: "Jaipur's famous pink colour was applied to much of the city in 1876. Who was the royal visit being prepared for?",
+      opts: ["Queen Victoria", "Prince Albert Edward, Prince of Wales", "Lord Curzon", "Tsar Nicholas II"],
+      correct: 1,
+      votes: [38, 41, 12, 9],
+      fact: "Maharaja Ram Singh II ordered the city painted pink — a colour of hospitality — to welcome Albert Edward, the Prince of Wales, during his tour of India in 1876."
+    },
+    {
+      q: "What is pashmina made from?",
+      opts: [
+        "The fine undercoat (Pashm) of the Himalayan mountain goat",
+        "The wool of merino sheep found in Central Asia",
+        "Silk blended with goat hair from Persian weaving traditions",
+        "Cotton fibres hand-spun in the Kashmir Valley"
+      ],
+      correct: 0,
+      votes: [61, 14, 17, 8],
+      fact: "Pashmina comes from the Pashm — the extraordinarily soft winter undercoat of the Changthangi goat, native to the high altitudes of the Himalayas. The fibres are so fine they can be drawn through a finger ring, giving rise to the term 'ring shawl'."
+    },
+    {
+      q: "City Palace was home to a royal family whose diplomatic ties stretched across the globe. Which power maintained the earliest formal relations with the Kachhwaha rulers?",
+      opts: ["French East India Company", "Portuguese Crown", "British East India Company", "Dutch VOC"],
+      correct: 2,
+      votes: [14, 22, 44, 20],
+      fact: "The British East India Company formalised relations with the Kachhwaha rulers, making Jaipur a key princely state — ties that shaped trade, architecture, and diplomacy for centuries."
+    },
+    {
+      q: "What is koftgiri?",
+      opts: [
+        "A style of miniature painting developed in Mughal ateliers",
+        "A decorative technique of inlaying gold or silver wire into steel, often seen on arms and armour",
+        "A type of woven textile from Kashmir",
+        "A form of stone carving used in temple architecture"
+      ],
+      correct: 1,
+      votes: [22, 48, 18, 12],
+      fact: "Koftgiri is the art of inlaying fine gold or silver wire into a darkened steel surface to create intricate patterns. Practiced by master craftsmen in Rajasthan, it adorns swords, shields, and ceremonial arms — objects that were both weapons and works of art."
+    },
+    {
+      q: "The Jantar Mantar observatory in Jaipur, built by Sawai Jai Singh II, was recognised by UNESCO as a World Heritage Site in which year?",
+      opts: ["1998", "2003", "2010", "2016"],
+      correct: 2,
+      votes: [12, 25, 48, 15],
+      fact: "Jantar Mantar was inscribed as a UNESCO World Heritage Site in 2010, celebrated for its nineteen remarkable architectural astronomical instruments."
+    }
+  ];
+
+  const letters = ['A','B','C','D'];
+  let current = 0, score = 0, answered = false;
+
+  function startQuiz() {
+    current = 0; score = 0; answered = false;
+    document.getElementById('quiz-screen').style.display = 'block';
+    document.getElementById('score-screen').style.display = 'none';
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    answered = false;
+    const q = questions[current];
+    const total = questions.length;
+
+    document.getElementById('q-counter').textContent = 'Question ' + (current + 1) + ' of ' + total;
+    document.getElementById('progress-fill').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('question-text').textContent = q.q;
+
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback-box';
+    fb.textContent = '';
+
+    const nb = document.getElementById('next-btn');
+    nb.className = 'next-btn';
+    nb.textContent = current < total - 1 ? 'Next question →' : 'See your results →';
+
+    const wrap = document.getElementById('options');
+    wrap.innerHTML = '';
+
+    q.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML =
+        '<div class="result-bar"></div>' +
+        '<div class="option-inner">' +
+          '<span class="letter">' + letters[i] + '</span>' +
+          '<span class="opt-label">' + opt + '</span>' +
+          (i === q.correct ? '<span class="correct-mark" id="cm-' + i + '">✓ Correct</span>' : '') +
+          '<span class="pct" id="pct-' + i + '"></span>' +
+        '</div>';
+      btn.onclick = () => pick(i);
+      wrap.appendChild(btn);
+    });
+  }
+
+  function pick(chosen) {
+    if (answered) return;
+    answered = true;
+    const q = questions[current];
+    if (chosen === q.correct) score++;
+
+    const btns = document.querySelectorAll('.option-btn');
+    const voteTotal = q.votes.reduce((a, b) => a + b, 0);
+
+    btns.forEach((btn, i) => {
+      btn.disabled = true;
+      if (i === q.correct) btn.classList.add('is-correct');
+      else if (i === chosen) btn.classList.add('is-wrong');
+      else btn.classList.add('is-other');
+      btn.classList.add('revealed');
+
+      const pct = Math.round(q.votes[i] / voteTotal * 100);
+      document.getElementById('pct-' + i).textContent = pct + '%';
+      setTimeout(() => {
+        btn.querySelector('.result-bar').style.width = pct + '%';
+      }, 80);
+    });
+
+    const fb = document.getElementById('feedback');
+    fb.textContent = (chosen === q.correct ? '✓  ' : 'Not quite — ') + q.fact;
+    fb.className = 'feedback-box show ' + (chosen === q.correct ? 'right' : 'wrong');
+
+    const nb = document.getElementById('next-btn');
+    setTimeout(() => nb.classList.add('show'), 200);
+  }
+
+  document.getElementById('next-btn').onclick = () => {
+    if (current < questions.length - 1) {
+      current++;
+      renderQuestion();
+    } else {
+      showScore();
+    }
+  };
+
+  function showScore() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('score-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = score + '/' + questions.length;
+
+    const titles = ['Keep exploring!', 'Keep exploring!', 'Not bad!', 'Not bad!', 'Well done!', 'Well done!', 'Impressive!', 'Remarkable!'];
+    const subs = [
+      'The exhibit holds many secrets. Walk through the galleries to discover them.',
+      'The exhibit holds many secrets. Walk through the galleries to discover them.',
+      'A good start — the galleries have much more to reveal about Jaipur and the world.',
+      'A good start — the galleries have much more to reveal about Jaipur and the world.',
+      'You know your history well. There is always more to uncover in these halls.',
+      'You know your history well. There is always more to uncover in these halls.',
+      'A keen sense of history — the galleries will reveal still more to a mind like yours.',
+      'A perfect score! You are already a true scholar of Jaipur and the World.'
+    ];
+    document.getElementById('score-title').textContent = titles[score];
+    document.getElementById('score-sub').textContent = subs[score];
+  }
+
+  startQuiz();
+</script>
+</body>
+</html>
