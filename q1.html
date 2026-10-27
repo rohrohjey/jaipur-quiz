@@ -71,11 +71,39 @@
       text-align: right;
       white-space: nowrap;
     }
+    .lang-toggle {
+      display: flex;
+      gap: 0;
+      margin: 16px 18px 0;
+      position: relative;
+      z-index: 1;
+      background: rgba(107,30,46,0.08);
+      border-radius: 8px;
+      padding: 3px;
+      width: fit-content;
+    }
+    .lang-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6B1E2E;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .lang-btn.active {
+      background: #6B1E2E;
+      color: #F2E8D9;
+    }
     .question-card {
       background: #fff9f3;
       border-radius: 14px;
       border: 0.5px solid rgba(107,30,46,0.14);
-      margin: 22px 18px 0;
+      margin: 12px 18px 0;
       padding: 20px 20px 18px;
       position: relative;
       z-index: 1;
@@ -188,7 +216,7 @@
       padding: 13px 16px;
       font-family: 'Cormorant Garamond', serif;
       font-size: 16px;
-      line-height: 1.45;
+      line-height: 1.5;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 0.4s 0.3s, transform 0.4s 0.3s;
@@ -244,9 +272,14 @@
     <div class="q-badge">Wall 1</div>
   </div>
 
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="btn-hi" onclick="setLang('hi')">हिं</button>
+  </div>
+
   <div class="question-card">
-    <div class="eyebrow">Did You Know?</div>
-    <div class="question-text">In which year did Maharaja Sawai Jai Singh II found the city of Jaipur — making it one of India's first planned cities?</div>
+    <div class="eyebrow">Did You Know? &nbsp;/&nbsp; क्या आप जानते हैं?</div>
+    <div class="question-text" id="question-text"></div>
   </div>
 
   <div class="options" id="options"></div>
@@ -260,39 +293,61 @@
 
 <script>
   const data = {
-    opts: ["1727", "1699", "1743", "1782"],
+    opts_en: ["Zij Muhammad Shahi", "Akbarnama", "Baburnama", "Ain-i-Akbari"],
+    opts_hi: ["ज़िज मुहम्मद शाही", "अकबरनामा", "बाबरनामा", "आईन-ए-अकबरी"],
+    q_en: "Which important astronomical work resulted from Sawai Jai Singh II's observations?",
+    q_hi: "सवाई जयसिंह द्वितीय के खगोलीय अवलोकन के परिणाम स्वरूप कौन-सा महत्वपूर्ण ग्रंथ तैयार हुआ?",
     correct: 0,
-    votes: [52, 18, 20, 10],
-    fact: "Founded in 1727, Jaipur was laid out according to the principles of Vastu Shastra in a grid plan, making it one of the earliest planned cities in the subcontinent."
+    votes: [48, 18, 16, 18],
+    fact_en: "The Zij Muhammad Shahi was a landmark astronomical table compiled by Sawai Jai Singh II following years of careful observation. Named in honour of the Mughal emperor Muhammad Shah, it updated centuries-old astronomical data and was distributed to scholars across the world.",
+    fact_hi: "ज़िज मुहम्मद शाही एक महत्वपूर्ण खगोलीय तालिका है जिसे सवाई जयसिंह द्वितीय ने वर्षों के सावधानीपूर्ण अवलोकन के बाद संकलित किया। मुग़ल सम्राट मुहम्मद शाह के सम्मान में नामित यह ग्रंथ सदियों पुराने खगोलीय आँकड़ों को अद्यतन करता है।"
   };
 
   const letters = ['A','B','C','D'];
   let answered = false;
+  let lang = 'en';
 
-  const wrap = document.getElementById('options');
-  data.opts.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML =
-      '<div class="result-bar"></div>' +
-      '<div class="option-inner">' +
-        '<span class="letter">' + letters[i] + '</span>' +
-        '<span class="opt-label">' + opt + '</span>' +
-        (i === data.correct ? '<span class="correct-mark" id="cm-' + i + '">✓ Correct</span>' : '') +
-        '<span class="pct" id="pct-' + i + '"></span>' +
-      '</div>';
-    btn.onclick = () => pick(i);
-    wrap.appendChild(btn);
-  });
+  function setLang(l) {
+    lang = l;
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    document.getElementById('btn-hi').classList.toggle('active', l === 'hi');
+    document.getElementById('question-text').textContent = l === 'en' ? data.q_en : data.q_hi;
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach((btn, i) => {
+      btn.querySelector('.opt-label').textContent = l === 'en' ? data.opts_en[i] : data.opts_hi[i];
+    });
+    if (answered) {
+      const fb = document.getElementById('feedback');
+      const prefix = fb.classList.contains('right') ? (l === 'en' ? '✓  ' : '✓  ') : (l === 'en' ? 'Not quite — ' : 'सही नहीं — ');
+      fb.textContent = prefix + (l === 'en' ? data.fact_en : data.fact_hi);
+    }
+  }
+
+  function render() {
+    document.getElementById('question-text').textContent = data.q_en;
+    const wrap = document.getElementById('options');
+    wrap.innerHTML = '';
+    data.opts_en.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML =
+        '<div class="result-bar"></div>' +
+        '<div class="option-inner">' +
+          '<span class="letter">' + letters[i] + '</span>' +
+          '<span class="opt-label">' + opt + '</span>' +
+          (i === data.correct ? '<span class="correct-mark">✓ Correct</span>' : '') +
+          '<span class="pct" id="pct-' + i + '"></span>' +
+        '</div>';
+      btn.onclick = () => pick(i);
+      wrap.appendChild(btn);
+    });
+  }
 
   function pick(chosen) {
     if (answered) return;
     answered = true;
-
-    // increment locally
     data.votes[chosen] += 1;
     const total = data.votes.reduce((a, b) => a + b, 0);
-
     const btns = document.querySelectorAll('.option-btn');
     btns.forEach((btn, i) => {
       btn.disabled = true;
@@ -300,20 +355,19 @@
       else if (i === chosen) btn.classList.add('is-wrong');
       else btn.classList.add('is-other');
       btn.classList.add('revealed');
-
       const pct = Math.round(data.votes[i] / total * 100);
       document.getElementById('pct-' + i).textContent = pct + '%';
-      setTimeout(() => {
-        btn.querySelector('.result-bar').style.width = pct + '%';
-      }, 80);
+      setTimeout(() => { btn.querySelector('.result-bar').style.width = pct + '%'; }, 80);
     });
-
+    const isRight = chosen === data.correct;
     const fb = document.getElementById('feedback');
-    fb.textContent = (chosen === data.correct ? '✓  ' : 'Not quite — ') + data.fact;
-    fb.className = 'feedback-box show ' + (chosen === data.correct ? 'right' : 'wrong');
-
+    const prefix = isRight ? '✓  ' : (lang === 'en' ? 'Not quite — ' : 'सही नहीं — ');
+    fb.textContent = prefix + (lang === 'en' ? data.fact_en : data.fact_hi);
+    fb.className = 'feedback-box show ' + (isRight ? 'right' : 'wrong');
     setTimeout(() => document.getElementById('footer').classList.add('show'), 700);
   }
+
+  render();
 </script>
 </body>
 </html>
